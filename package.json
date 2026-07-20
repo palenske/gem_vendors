@@ -1,0 +1,12 @@
+{
+  "name": "localizador-revendedoras",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter api start:dev",
+    "dev:web": "pnpm --filter app web",
+    "dev:mobile": "pnpm --filter app start",
+    "seed": "pnpm --filter api prisma:seed",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  }
+}

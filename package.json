@@ -8,5 +8,11 @@
     "seed": "pnpm --filter api prisma:seed",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "prisma",
+      "@prisma/engines"
+    ]
   }
 }

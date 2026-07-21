@@ -5,12 +5,12 @@ import type { ResellerResult, LatLng } from "@localizador/shared";
 import { useMemo } from "react";
 
 // Fix para ícones padrão do Leaflet não aparecerem no react-leaflet
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
+const iconUrl = "images/leaflet/marker-icon.png";
+const shadowUrl = "images/leaflet/marker-shadow.png";
 
 let DefaultIcon = L.icon({
-  iconUrl: icon.src,
-  shadowUrl: iconShadow.src,
+  iconUrl,
+  shadowUrl,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
@@ -31,10 +31,7 @@ function MapBounds({ origin, results }: MapProps) {
     const bounds = L.latLngBounds([origin.latitude, origin.longitude]);
 
     results.forEach((reseller) => {
-      bounds.extend([
-        reseller.location.latitude,
-        reseller.location.longitude,
-      ]);
+      bounds.extend([reseller.location.latitude, reseller.location.longitude]);
     });
 
     if (results.length > 0) {

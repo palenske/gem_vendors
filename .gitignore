@@ -1,7 +1,55 @@
+# ─── Dependencies ───────────────────────────────────────────────
 node_modules/
+
+# ─── Build output ───────────────────────────────────────────────
 dist/
-coverage/
+web-build/
+*.tsbuildinfo
+
+# ─── Environment variables ─────────────────────────────────────
 .env
+.env.local
+.env.*.local
+
+# ─── Prisma generated client ───────────────────────────────────
+**/generated/prisma/
+
+# ─── Expo ───────────────────────────────────────────────────────
 .expo/
+expo-env.d.ts
+.metro-health-check*
+
+# ─── Native builds (Expo prebuild) ────────────────────────────
+ios/
+android/
+.kotlin/
+
+# ─── Testing ────────────────────────────────────────────────────
+coverage/
+
+# ─── Logs ──────────────────────────────────────────────────────
 *.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 seed-failures.log
+
+# ─── OS files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ─── Editor / IDE ──────────────────────────────────────────────
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# ─── Secrets / certs (never commit) ───────────────────────────
+*.pem
+*.p12
+*.p8
+*.jks
+*.key
+*.mobileprovision

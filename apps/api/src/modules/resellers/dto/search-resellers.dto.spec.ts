@@ -74,6 +74,17 @@ describe('SearchResellersDto', () => {
     expect(errors.length).toBe(0);
   });
 
+  it('should validate DTO with text query q', async () => {
+    const dto = plainToInstance(SearchResellersDto, {
+      latitude: -25.4284,
+      longitude: -49.2733,
+      q: 'Batel',
+    });
+
+    const errors = await validate(dto);
+    expect(errors.length).toBe(0);
+  });
+
   it('should reject invalid status values', async () => {
     const dto = plainToInstance(SearchResellersDto, {
       latitude: -25.4284,

@@ -67,6 +67,10 @@ export class SearchResellersDto {
   radiusKm?: number;
 
   @IsOptional()
+  @IsString()
+  q?: string;
+
+  @IsOptional()
   @IsIn(['ATIVA', 'INATIVA', 'EM_PROSPECCAO'])
   status?: ResellerStatus;
 

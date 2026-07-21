@@ -5,4 +5,4 @@ export {
   type ResellerResult,
   type LatLng,
   type SearchParams,
-} from './types/reseller';
+} from "./types/reseller";

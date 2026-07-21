@@ -1,7 +1,7 @@
 export enum ResellerStatus {
-  ATIVA = 'ATIVA',
-  INATIVA = 'INATIVA',
-  EM_PROSPECCAO = 'EM_PROSPECCAO',
+  ATIVA = "ATIVA",
+  INATIVA = "INATIVA",
+  EM_PROSPECCAO = "EM_PROSPECCAO",
 }
 
 export interface Reseller {
@@ -52,11 +52,14 @@ export interface LatLng {
 }
 
 export interface SearchParams {
-  cep?: string;
-  address?: string;
+  zipCode?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
   latitude?: number;
   longitude?: number;
-  radius?: number;
+  radiusKm?: number;
+  q?: string;
   status?: ResellerStatus;
   page?: number;
   limit?: number;

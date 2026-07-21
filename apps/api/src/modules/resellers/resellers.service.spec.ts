@@ -231,6 +231,48 @@ describe('ResellersService', () => {
       );
     });
 
+    it('should filter by text query q across name, street, neighborhood, city', async () => {
+      mockPrismaService.reseller.findMany.mockResolvedValue([mockResellers[0]]);
+      mockGeoService.haversineKm.mockReturnValue(1);
+
+      const dto: SearchResellersDto = {
+        latitude: -25.4284,
+        longitude: -49.2733,
+        q: 'Batel',
+      };
+
+      await service.search(dto);
+
+      expect(mockPrismaService.reseller.findMany).toHaveBeenCalledWith({
+        where: {
+          status: 'ATIVA',
+          latitude: { not: null },
+          longitude: { not: null },
+          OR: [
+            { name: { contains: 'Batel', mode: 'insensitive' } },
+            { street: { contains: 'Batel', mode: 'insensitive' } },
+            { neighborhood: { contains: 'Batel', mode: 'insensitive' } },
+            { city: { contains: 'Batel', mode: 'insensitive' } },
+          ],
+        },
+      });
+    });
+
+    it('should return empty results when q matches nothing', async () => {
+      mockPrismaService.reseller.findMany.mockResolvedValue([]);
+
+      const dto: SearchResellersDto = {
+        latitude: -25.4284,
+        longitude: -49.2733,
+        q: 'Inexistente',
+      };
+
+      const result = await service.search(dto);
+
+      expect(result.results).toHaveLength(0);
+      expect(result.meta.total).toBe(0);
+    });
+
     it('should generate Google Maps URL', async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue([mockResellers[0]]);
       mockGeoService.haversineKm.mockReturnValue(1);

@@ -25,11 +25,20 @@ export class ResellersService {
     const origin = await this.resolveOrigin(dto);
 
     // Query all resellers with the specified status
-    const where = {
-      status: (dto.status || ResellerStatus.ATIVA) as any,
+    const where: any = {
+      status: dto.status || ResellerStatus.ATIVA,
       latitude: { not: null },
       longitude: { not: null },
     };
+
+    if (dto.q) {
+      where.OR = [
+        { name: { contains: dto.q, mode: 'insensitive' } },
+        { street: { contains: dto.q, mode: 'insensitive' } },
+        { neighborhood: { contains: dto.q, mode: 'insensitive' } },
+        { city: { contains: dto.q, mode: 'insensitive' } },
+      ];
+    }
 
     const resellers = await this.prisma.reseller.findMany({
       where,

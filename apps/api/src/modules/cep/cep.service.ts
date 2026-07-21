@@ -1,17 +1,23 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { CepResponseDto } from './dto/cep-response.dto';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
+import { CepResponseDto } from "./dto/cep-response.dto";
 
 @Injectable()
 export class CepService {
   private readonly logger = new Logger(CepService.name);
-  private readonly viacepUrl = 'https://viacep.com.br/ws';
+  private readonly viacepUrl = "https://viacep.com.br/ws";
 
   async findByZipCode(zipCode: string): Promise<CepResponseDto> {
     // Strip non-digits from CEP
-    const digitsOnly = zipCode.replace(/\D/g, '');
+    const digitsOnly = zipCode.replace(/\D/g, "");
 
     if (digitsOnly.length !== 8) {
-      throw new NotFoundException('CEP inválido');
+      throw new NotFoundException("CEP inválido");
     }
 
     try {
@@ -21,13 +27,16 @@ export class CepService {
 
       if (!response.ok) {
         this.logger.error(`ViaCEP HTTP error: ${response.status}`);
-        throw new Error('ViaCEP request failed');
+        throw new HttpException(
+          "Serviço de CEP temporariamente indisponível",
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
       }
 
       const data = (await response.json()) as Record<string, string>;
 
       if (data.erro) {
-        throw new NotFoundException('CEP não encontrado');
+        throw new NotFoundException("CEP não encontrado");
       }
 
       return {
@@ -38,12 +47,18 @@ export class CepService {
         uf: data.uf,
       };
     } catch (error) {
-      if (error instanceof NotFoundException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof HttpException
+      ) {
         throw error;
       }
 
-      this.logger.error(`ViaCEP error: ${error}`);
-      throw new Error('Serviço de CEP temporariamente indisponível');
+      this.logger.error(`ViaCEP error: ${String(error)}`);
+      throw new HttpException(
+        "Serviço de CEP temporariamente indisponível",
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
   }
 }

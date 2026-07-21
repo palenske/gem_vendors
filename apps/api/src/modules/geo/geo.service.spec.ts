@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { GeoService } from './geo.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { GeoService } from "./geo.service";
 
-describe('GeoService', () => {
+describe("GeoService", () => {
   let service: GeoService;
 
   beforeEach(async () => {
@@ -12,18 +12,18 @@ describe('GeoService', () => {
     service = module.get<GeoService>(GeoService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 
-  describe('haversineKm', () => {
-    it('should return 0 for the same point', () => {
+  describe("haversineKm", () => {
+    it("should return 0 for the same point", () => {
       const point = { latitude: -25.4284, longitude: -49.2733 };
       const distance = service.haversineKm(point, point);
       expect(distance).toBe(0);
     });
 
-    it('should calculate distance between two points in Curitiba (~2km)', () => {
+    it("should calculate distance between two points in Curitiba (~2km)", () => {
       // Two points in Curitiba approximately 2km apart
       const pointA = { latitude: -25.4284, longitude: -49.2733 }; // Centro
       const pointB = { latitude: -25.4408, longitude: -49.2733 }; // ~1.4km south
@@ -35,7 +35,7 @@ describe('GeoService', () => {
       expect(distance).toBeLessThan(1.5);
     });
 
-    it('should calculate distance between Curitiba and São Paulo (~340km)', () => {
+    it("should calculate distance between Curitiba and São Paulo (~340km)", () => {
       const curitiba = { latitude: -25.4284, longitude: -49.2733 };
       const saoPaulo = { latitude: -23.5505, longitude: -46.6333 };
 
@@ -46,7 +46,7 @@ describe('GeoService', () => {
       expect(distance).toBeLessThan(360);
     });
 
-    it('should handle points across the equator', () => {
+    it("should handle points across the equator", () => {
       const north = { latitude: 10.0, longitude: 0.0 };
       const south = { latitude: -10.0, longitude: 0.0 };
 

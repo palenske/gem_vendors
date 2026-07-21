@@ -1,18 +1,7 @@
-import { IsString } from 'class-validator';
-
-export class CepResponseDto {
-  @IsString()
+export interface CepResponseDto {
   cep: string;
-
-  @IsString()
   logradouro: string;
-
-  @IsString()
   bairro: string;
-
-  @IsString()
   localidade: string;
-
-  @IsString()
   uf: string;
 }

@@ -1,38 +1,6 @@
-import {
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsIn,
-  Validate,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-  ValidationArguments,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-
-export enum ResellerStatus {
-  ATIVA = 'ATIVA',
-  INATIVA = 'INATIVA',
-  EM_PROSPECCAO = 'EM_PROSPECCAO',
-}
-
-@ValidatorConstraint({ name: 'LocationCriteria', async: false })
-export class LocationCriteriaValidator implements ValidatorConstraintInterface {
-  validate(_value: any, args: ValidationArguments): boolean {
-    const obj = args.object as SearchResellersDto;
-    return !!(
-      obj.zipCode ||
-      obj.latitude ||
-      obj.longitude ||
-      obj.street ||
-      obj.neighborhood
-    );
-  }
-
-  defaultMessage(): string {
-    return 'Informe ao menos um critério de busca: CEP, endereço ou coordenadas';
-  }
-}
+import { IsString, IsNumber, IsOptional, IsIn } from "class-validator";
+import { Type } from "class-transformer";
+import { ResellerStatus } from "@prisma/client";
 
 export class SearchResellersDto {
   @IsOptional()
@@ -71,7 +39,7 @@ export class SearchResellersDto {
   q?: string;
 
   @IsOptional()
-  @IsIn(['ATIVA', 'INATIVA', 'EM_PROSPECCAO'])
+  @IsIn(Object.values(ResellerStatus))
   status?: ResellerStatus;
 
   @IsOptional()
@@ -83,7 +51,4 @@ export class SearchResellersDto {
   @IsNumber()
   @Type(() => Number)
   limit?: number;
-
-  @Validate(LocationCriteriaValidator)
-  _locationCriteria: any;
 }

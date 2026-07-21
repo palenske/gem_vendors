@@ -1,12 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ResellersService } from './resellers.service';
-import { PrismaService } from '../../prisma/prisma.service';
-import { GeoService } from '../geo/geo.service';
-import { GeocodingService } from '../geo/geocoding.service';
-import { CepService } from '../cep/cep.service';
-import { SearchResellersDto, ResellerStatus } from './dto/search-resellers.dto';
+import { Test, TestingModule } from "@nestjs/testing";
+import { ResellersService } from "./resellers.service";
+import { PrismaService } from "../../prisma/prisma.service";
+import { GeoService } from "../geo/geo.service";
+import { GeocodingService } from "../geo/geocoding.service";
+import { CepService } from "../cep/cep.service";
+import { SearchResellersDto } from "./dto/search-resellers.dto";
+import { ResellerStatus } from "@prisma/client";
 
-describe('ResellersService', () => {
+describe("ResellersService", () => {
   let service: ResellersService;
 
   const mockPrismaService = {
@@ -43,41 +44,41 @@ describe('ResellersService', () => {
     service = module.get<ResellersService>(ResellersService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 
-  describe('search', () => {
+  describe("search", () => {
     const mockResellers = [
       {
-        id: '1',
-        name: 'Revendedora A',
-        street: 'Rua A',
-        number: '100',
-        neighborhood: 'Centro',
-        city: 'Curitiba',
-        state: 'PR',
-        zipCode: '80010-000',
-        status: 'ATIVA',
+        id: 1,
+        name: "Revendedora A",
+        street: "Rua A",
+        number: "100",
+        neighborhood: "Centro",
+        city: "Curitiba",
+        state: "PR",
+        zipCode: "80010-000",
+        status: "ATIVA",
         latitude: -25.4284,
         longitude: -49.2733,
       },
       {
-        id: '2',
-        name: 'Revendedora B',
-        street: 'Rua B',
-        number: '200',
-        neighborhood: 'Batel',
-        city: 'Curitiba',
-        state: 'PR',
-        zipCode: '80240-000',
-        status: 'ATIVA',
+        id: 2,
+        name: "Revendedora B",
+        street: "Rua B",
+        number: "200",
+        neighborhood: "Batel",
+        city: "Curitiba",
+        state: "PR",
+        zipCode: "80240-000",
+        status: "ATIVA",
         latitude: -25.4408,
         longitude: -49.2733,
       },
     ];
 
-    it('should search by coordinates and return results sorted by distance', async () => {
+    it("should search by coordinates and return results sorted by distance", async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue(mockResellers);
       mockGeoService.haversineKm
         .mockReturnValueOnce(1.5)
@@ -93,7 +94,7 @@ describe('ResellersService', () => {
       expect(result.origin).toEqual({
         latitude: -25.4284,
         longitude: -49.2733,
-        resolvedFrom: 'coordinates',
+        resolvedFrom: "coordinates",
       });
       expect(result.results).toHaveLength(2);
       expect(result.results[0].distanceKm).toBe(1.5);
@@ -101,12 +102,12 @@ describe('ResellersService', () => {
       expect(result.meta.total).toBe(2);
     });
 
-    it('should search by zipCode', async () => {
+    it("should search by zipCode", async () => {
       mockCepService.findByZipCode.mockResolvedValue({
-        logradouro: 'Avenida Paulista',
-        bairro: 'Bela Vista',
-        localidade: 'São Paulo',
-        uf: 'SP',
+        logradouro: "Avenida Paulista",
+        bairro: "Bela Vista",
+        localidade: "São Paulo",
+        uf: "SP",
       });
       mockGeocodingService.geocode.mockResolvedValue({
         latitude: -23.5505,
@@ -116,7 +117,7 @@ describe('ResellersService', () => {
       mockGeoService.haversineKm.mockReturnValue(0);
 
       const dto: SearchResellersDto = {
-        zipCode: '01310-100',
+        zipCode: "01310-100",
       };
 
       const result = await service.search(dto);
@@ -124,17 +125,15 @@ describe('ResellersService', () => {
       expect(result.origin).toEqual({
         latitude: -23.5505,
         longitude: -46.6333,
-        resolvedFrom: 'zipCode',
+        resolvedFrom: "zipCode",
       });
-      expect(mockCepService.findByZipCode).toHaveBeenCalledWith('01310-100');
+      expect(mockCepService.findByZipCode).toHaveBeenCalledWith("01310-100");
       expect(mockGeocodingService.geocode).toHaveBeenCalled();
     });
 
-    it('should filter by radiusKm', async () => {
+    it("should filter by radiusKm", async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue(mockResellers);
-      mockGeoService.haversineKm
-        .mockReturnValueOnce(5)
-        .mockReturnValueOnce(15);
+      mockGeoService.haversineKm.mockReturnValueOnce(5).mockReturnValueOnce(15);
 
       const dto: SearchResellersDto = {
         latitude: -25.4284,
@@ -148,7 +147,7 @@ describe('ResellersService', () => {
       expect(result.results[0].distanceKm).toBe(5);
     });
 
-    it('should filter by status', async () => {
+    it("should filter by status", async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue(mockResellers);
       mockGeoService.haversineKm.mockReturnValue(1);
 
@@ -162,17 +161,17 @@ describe('ResellersService', () => {
 
       expect(mockPrismaService.reseller.findMany).toHaveBeenCalledWith({
         where: {
-          status: 'INATIVA',
+          status: "INATIVA",
           latitude: { not: null },
           longitude: { not: null },
         },
       });
     });
 
-    it('should paginate results', async () => {
+    it("should paginate results", async () => {
       const manyResellers = Array.from({ length: 25 }, (_, i) => ({
         ...mockResellers[0],
-        id: String(i + 1),
+        id: i + 1,
         name: `Revendedora ${i + 1}`,
       }));
       mockPrismaService.reseller.findMany.mockResolvedValue(manyResellers);
@@ -193,7 +192,7 @@ describe('ResellersService', () => {
       expect(result.meta.total).toBe(25);
     });
 
-    it('should exclude resellers without coordinates via DB filter', async () => {
+    it("should exclude resellers without coordinates via DB filter", async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue([mockResellers[0]]);
       mockGeoService.haversineKm.mockReturnValue(1);
 
@@ -205,17 +204,17 @@ describe('ResellersService', () => {
       const result = await service.search(dto);
 
       expect(result.results).toHaveLength(1);
-      expect(result.results[0].id).toBe('1');
+      expect(result.results[0].id).toBe(1);
       expect(mockPrismaService.reseller.findMany).toHaveBeenCalledWith({
         where: {
-          status: 'ATIVA',
+          status: "ATIVA",
           latitude: { not: null },
           longitude: { not: null },
         },
       });
     });
 
-    it('should format address correctly', async () => {
+    it("should format address correctly", async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue([mockResellers[0]]);
       mockGeoService.haversineKm.mockReturnValue(1);
 
@@ -227,44 +226,44 @@ describe('ResellersService', () => {
       const result = await service.search(dto);
 
       expect(result.results[0].address).toBe(
-        'Rua A, 100, Centro, Curitiba, PR'
+        "Rua A, 100, Centro, Curitiba, PR",
       );
     });
 
-    it('should filter by text query q across name, street, neighborhood, city', async () => {
+    it("should filter by text query q across name, street, neighborhood, city", async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue([mockResellers[0]]);
       mockGeoService.haversineKm.mockReturnValue(1);
 
       const dto: SearchResellersDto = {
         latitude: -25.4284,
         longitude: -49.2733,
-        q: 'Batel',
+        q: "Batel",
       };
 
       await service.search(dto);
 
       expect(mockPrismaService.reseller.findMany).toHaveBeenCalledWith({
         where: {
-          status: 'ATIVA',
+          status: "ATIVA",
           latitude: { not: null },
           longitude: { not: null },
           OR: [
-            { name: { contains: 'Batel', mode: 'insensitive' } },
-            { street: { contains: 'Batel', mode: 'insensitive' } },
-            { neighborhood: { contains: 'Batel', mode: 'insensitive' } },
-            { city: { contains: 'Batel', mode: 'insensitive' } },
+            { name: { contains: "Batel", mode: "insensitive" } },
+            { street: { contains: "Batel", mode: "insensitive" } },
+            { neighborhood: { contains: "Batel", mode: "insensitive" } },
+            { city: { contains: "Batel", mode: "insensitive" } },
           ],
         },
       });
     });
 
-    it('should return empty results when q matches nothing', async () => {
+    it("should return empty results when q matches nothing", async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue([]);
 
       const dto: SearchResellersDto = {
         latitude: -25.4284,
         longitude: -49.2733,
-        q: 'Inexistente',
+        q: "Inexistente",
       };
 
       const result = await service.search(dto);
@@ -273,7 +272,7 @@ describe('ResellersService', () => {
       expect(result.meta.total).toBe(0);
     });
 
-    it('should generate Google Maps URL', async () => {
+    it("should generate Google Maps URL", async () => {
       mockPrismaService.reseller.findMany.mockResolvedValue([mockResellers[0]]);
       mockGeoService.haversineKm.mockReturnValue(1);
 
@@ -285,7 +284,7 @@ describe('ResellersService', () => {
       const result = await service.search(dto);
 
       expect(result.results[0].routeUrl).toBe(
-        'https://www.google.com/maps/dir/?api=1&destination=-25.4284,-49.2733'
+        "https://www.google.com/maps/dir/?api=1&destination=-25.4284,-49.2733",
       );
     });
   });

@@ -1,75 +1,35 @@
-import { IsString, IsNumber, IsArray, ValidateNested, IsIn } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ResellerStatus } from './search-resellers.dto';
+import { ResellerStatus } from "@prisma/client";
 
-export class OriginDto {
-  @IsNumber()
+export interface OriginDto {
   latitude: number;
-
-  @IsNumber()
   longitude: number;
-
-  @IsString()
   resolvedFrom: string;
 }
 
-export class LocationDto {
-  @IsNumber()
+export interface LocationDto {
   latitude: number;
-
-  @IsNumber()
   longitude: number;
 }
 
-export class ResellerResultDto {
-  @IsNumber()
+export interface ResellerResultDto {
   id: number;
-
-  @IsString()
   name: string;
-
-  @IsString()
   address: string;
-
-  @IsString()
   zipCode: string;
-
-  @IsIn(['ATIVA', 'INATIVA', 'EM_PROSPECCAO'])
   status: ResellerStatus;
-
-  @IsNumber()
   distanceKm: number;
-
-  @ValidateNested()
-  @Type(() => LocationDto)
   location: LocationDto;
-
-  @IsString()
   routeUrl: string;
 }
 
-export class MetaDto {
-  @IsNumber()
+export interface MetaDto {
   page: number;
-
-  @IsNumber()
   limit: number;
-
-  @IsNumber()
   total: number;
 }
 
-export class SearchResponseDto {
-  @ValidateNested()
-  @Type(() => OriginDto)
+export interface SearchResponseDto {
   origin: OriginDto;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ResellerResultDto)
   results: ResellerResultDto[];
-
-  @ValidateNested()
-  @Type(() => MetaDto)
   meta: MetaDto;
 }

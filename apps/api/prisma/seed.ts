@@ -1,20 +1,20 @@
-import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { parse } from 'csv-parse/sync';
-import * as fs from 'fs';
-import * as path from 'path';
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { parse } from "csv-parse/sync";
+import * as fs from "fs";
+import * as path from "path";
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({
-    connectionString: process.env.DATABASE_URL,
-  }),
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
 });
+const prisma = new PrismaClient({ adapter });
 
-const NOMINATIM_USER_AGENT = process.env.NOMINATIM_USER_AGENT || 'localizador-revendedoras-dev';
-const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const NOMINATIM_USER_AGENT =
+  process.env.NOMINATIM_USER_AGENT || "localizador-revendedoras-dev";
+const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 const RATE_LIMIT_DELAY_MS = 1100; // 1.1s between requests
-const FAILURES_LOG_PATH = path.join(__dirname, '../../seed-failures.log');
+const FAILURES_LOG_PATH = path.join(__dirname, "../../seed-failures.log");
 
 interface CsvRow {
   id: string;
@@ -28,11 +28,14 @@ interface CsvRow {
   status: string;
 }
 
-function normalizeStatus(status: string): 'ATIVA' | 'INATIVA' | 'EM_PROSPECCAO' {
+function normalizeStatus(
+  status: string,
+): "ATIVA" | "INATIVA" | "EM_PROSPECCAO" {
   const lower = status.toLowerCase().trim();
-  if (lower === 'ativa') return 'ATIVA';
-  if (lower === 'inativa') return 'INATIVA';
-  if (lower.includes('prospecção') || lower.includes('prospeccao')) return 'EM_PROSPECCAO';
+  if (lower === "ativa") return "ATIVA";
+  if (lower === "inativa") return "INATIVA";
+  if (lower.includes("prospecção") || lower.includes("prospeccao"))
+    return "EM_PROSPECCAO";
   throw new Error(`Unknown status: ${status}`);
 }
 
@@ -42,29 +45,33 @@ function normalizeCep(cep: string): string {
 }
 
 function stripBom(text: string): string {
-  return text.replace(/^\uFEFF/, '');
+  return text.replace(/^\uFEFF/, "");
 }
 
-async function geocode(address: string): Promise<{ latitude: number; longitude: number } | null> {
+async function geocode(
+  address: string,
+): Promise<{ latitude: number; longitude: number } | null> {
   try {
     const params = new URLSearchParams({
       q: address,
-      format: 'json',
-      limit: '1',
+      format: "json",
+      limit: "1",
     });
 
     const response = await fetch(`${NOMINATIM_URL}?${params}`, {
       headers: {
-        'User-Agent': NOMINATIM_USER_AGENT,
+        "User-Agent": NOMINATIM_USER_AGENT,
       },
     });
 
     if (!response.ok) {
-      console.error(`Nominatim HTTP error: ${response.status} for address: ${address}`);
+      console.error(
+        `Nominatim HTTP error: ${response.status} for address: ${address}`,
+      );
       return null;
     }
 
-    const data = await response.json() as Array<{ lat: string; lon: string }>;
+    const data = (await response.json()) as Array<{ lat: string; lon: string }>;
 
     if (data.length === 0) {
       return null;
@@ -87,14 +94,17 @@ function logFailure(id: string, name: string, address: string, reason: string) {
 }
 
 async function main() {
-  console.log('Starting seed...');
+  console.log("Starting seed...");
 
   // Read CSV file
-  const csvPath = path.join(__dirname, '../../../data/Base_200_Revendedoras_Fake.csv');
-  const csvContent = stripBom(fs.readFileSync(csvPath, 'utf-8'));
+  const csvPath = path.join(
+    __dirname,
+    "../../../data/Base_200_Revendedoras_Fake.csv",
+  );
+  const csvContent = stripBom(fs.readFileSync(csvPath, "utf-8"));
 
   const records = parse(csvContent, {
-    delimiter: ';',
+    delimiter: ";",
     columns: true,
     skip_empty_lines: true,
   }) as CsvRow[];
@@ -131,7 +141,12 @@ async function main() {
 
     if (!coords) {
       console.log(`  Failed to geocode ID ${id}`);
-      logFailure(String(id), name, fullAddress, 'Nominatim returned no results');
+      logFailure(
+        String(id),
+        name,
+        fullAddress,
+        "Nominatim returned no results",
+      );
       failCount++;
     } else {
       console.log(`  Geocoded: ${coords.latitude}, ${coords.longitude}`);
@@ -174,7 +189,7 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY_MS));
   }
 
-  console.log('\nSeed completed!');
+  console.log("\nSeed completed!");
   console.log(`  Success: ${successCount}`);
   console.log(`  Failed: ${failCount}`);
   console.log(`  Total: ${records.length}`);
@@ -187,6 +202,6 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error('Seed failed:', e);
+  console.error("Seed failed:", e);
   process.exit(1);
 });

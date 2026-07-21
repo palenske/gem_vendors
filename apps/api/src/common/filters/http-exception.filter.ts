@@ -4,36 +4,26 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-} from '@nestjs/common';
-import { Response } from 'express';
+} from "@nestjs/common";
+import { Response } from "express";
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const status = exception.getStatus
+    const status: HttpStatus = exception.getStatus
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    let message: string;
-
-    switch (status) {
-      case HttpStatus.BAD_REQUEST:
-        message = 'Informe ao menos um critério de busca: CEP, endereço ou coordenadas';
-        break;
-      case HttpStatus.NOT_FOUND:
-        message = 'Recurso não encontrado';
-        break;
-      case HttpStatus.UNPROCESSABLE_ENTITY:
-        message = exception.message || 'Não foi possível processar a solicitação';
-        break;
-      case HttpStatus.SERVICE_UNAVAILABLE:
-        message = 'Serviço temporariamente indisponível. Tente novamente.';
-        break;
-      default:
-        message = 'Erro interno do servidor';
-    }
+    const responsePayload = exception.getResponse();
+    const message =
+      (typeof responsePayload === "object" &&
+        responsePayload !== null &&
+        "message" in responsePayload &&
+        String((responsePayload as Record<string, unknown>).message)) ||
+      exception.message ||
+      "Erro interno do servidor";
 
     response.status(status).json({
       statusCode: status,

@@ -1,14 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { GeoService } from '../geo/geo.service';
-import { GeocodingService } from '../geo/geocoding.service';
-import { CepService } from '../cep/cep.service';
-import { SearchResellersDto, ResellerStatus } from './dto/search-resellers.dto';
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { Prisma, ResellerStatus } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
+import { GeoService } from "../geo/geo.service";
+import { GeocodingService } from "../geo/geocoding.service";
+import { CepService } from "../cep/cep.service";
+import { SearchResellersDto } from "./dto/search-resellers.dto";
 import {
   SearchResponseDto,
   ResellerResultDto,
   OriginDto,
-} from './dto/reseller-response.dto';
+} from "./dto/reseller-response.dto";
 
 @Injectable()
 export class ResellersService {
@@ -25,7 +26,7 @@ export class ResellersService {
     const origin = await this.resolveOrigin(dto);
 
     // Query all resellers with the specified status
-    const where: any = {
+    const where: Prisma.ResellerWhereInput = {
       status: dto.status || ResellerStatus.ATIVA,
       latitude: { not: null },
       longitude: { not: null },
@@ -33,10 +34,10 @@ export class ResellersService {
 
     if (dto.q) {
       where.OR = [
-        { name: { contains: dto.q, mode: 'insensitive' } },
-        { street: { contains: dto.q, mode: 'insensitive' } },
-        { neighborhood: { contains: dto.q, mode: 'insensitive' } },
-        { city: { contains: dto.q, mode: 'insensitive' } },
+        { name: { contains: dto.q, mode: "insensitive" } },
+        { street: { contains: dto.q, mode: "insensitive" } },
+        { neighborhood: { contains: dto.q, mode: "insensitive" } },
+        { city: { contains: dto.q, mode: "insensitive" } },
       ];
     }
 
@@ -58,7 +59,7 @@ export class ResellersService {
         name: reseller.name,
         address,
         zipCode: reseller.zipCode,
-        status: reseller.status as unknown as ResellerStatus,
+        status: reseller.status,
         distanceKm: Math.round(distanceKm * 100) / 100,
         location: {
           latitude: reseller.latitude!,
@@ -94,15 +95,13 @@ export class ResellersService {
     };
   }
 
-  private async resolveOrigin(
-    dto: SearchResellersDto,
-  ): Promise<OriginDto> {
+  private async resolveOrigin(dto: SearchResellersDto): Promise<OriginDto> {
     // If coordinates provided, use them directly
     if (dto.latitude && dto.longitude) {
       return {
         latitude: dto.latitude,
         longitude: dto.longitude,
-        resolvedFrom: 'coordinates',
+        resolvedFrom: "coordinates",
       };
     }
 
@@ -114,28 +113,26 @@ export class ResellersService {
       return {
         latitude: coords.latitude,
         longitude: coords.longitude,
-        resolvedFrom: 'zipCode',
+        resolvedFrom: "zipCode",
       };
     }
 
     // If street/neighborhood provided, geocode the address
     if (dto.street || dto.neighborhood) {
-      const parts = [
-        dto.street,
-        dto.number,
-        dto.neighborhood,
-        'Brasil',
-      ].filter(Boolean);
-      const fullAddress = parts.join(', ');
+      const parts = [dto.street, dto.number, dto.neighborhood, "Brasil"].filter(
+        Boolean,
+      );
+      const fullAddress = parts.join(", ");
       const coords = await this.geocodingService.geocode(fullAddress);
       return {
         latitude: coords.latitude,
         longitude: coords.longitude,
-        resolvedFrom: 'address',
+        resolvedFrom: "address",
       };
     }
 
-    // This should never happen due to DTO validation
-    throw new Error('No location criteria provided');
+    throw new BadRequestException(
+      "Informe ao menos um critério de busca: CEP, endereço ou coordenadas",
+    );
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { MapProps } from "./MapContent.web";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 /**
  * Componente de mapa para web usando react-leaflet.
@@ -7,6 +8,14 @@ import type { MapProps } from "./MapContent.web";
  * Usa lazy loading para evitar erro "window is not defined" no SSR.
  */
 export function Map(props: MapProps) {
+  return (
+    <ErrorBoundary>
+      <MapContentInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function MapContentInner(props: MapProps) {
   const [MapContent, setMapContent] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 

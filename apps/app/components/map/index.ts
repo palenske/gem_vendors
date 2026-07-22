@@ -1,5 +1,5 @@
 export { Map } from "./Map.web";
 export type { MapProps } from "./Map.web";
 
-// Re-exportar para native também
+// Re-export for native
 export { Map as MapNative } from "./Map.native";

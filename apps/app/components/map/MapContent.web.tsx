@@ -1,8 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import type { ResellerResult, LatLng } from "@localizador/shared";
-import { useMemo } from "react";
+import { useEffect } from "react";
 
 // Fix para ícones padrão do Leaflet não aparecerem no react-leaflet
 const iconUrl = "images/leaflet/marker-icon.png";
@@ -25,7 +24,7 @@ export interface MapProps {
 function MapBounds({ origin, results }: MapProps) {
   const map = useMap();
 
-  useMemo(() => {
+  useEffect(() => {
     if (!origin) return;
 
     const bounds = L.latLngBounds([origin.latitude, origin.longitude]);

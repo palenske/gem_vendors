@@ -1,6 +1,7 @@
 import { View, Text } from "react-native";
 import MapView, { Marker, Callout } from "react-native-maps";
 import type { ResellerResult, LatLng } from "@localizador/shared";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export interface MapProps {
   origin: LatLng | null;
@@ -13,6 +14,14 @@ export interface MapProps {
  * Exibe marcadores para a origem (azul) e para cada revendedora (vermelho).
  */
 export function Map({ origin, results }: MapProps) {
+  return (
+    <ErrorBoundary>
+      <MapContentInner {...{ origin, results }} />
+    </ErrorBoundary>
+  );
+}
+
+function MapContentInner({ origin, results }: MapProps) {
   if (!origin) {
     return (
       <View className="flex-1 bg-gray-200 dark:bg-gray-700 items-center justify-center">

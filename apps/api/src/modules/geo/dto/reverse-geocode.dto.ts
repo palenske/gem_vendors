@@ -1,18 +1,7 @@
-import { IsString } from "class-validator";
-
-export class ReverseGeocodeResponseDto {
-  @IsString()
+export interface ReverseGeocodeResponseDto {
   logradouro: string;
-
-  @IsString()
   bairro: string;
-
-  @IsString()
   localidade: string;
-
-  @IsString()
   uf: string;
-
-  @IsString()
   cep: string;
 }

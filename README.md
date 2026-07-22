@@ -116,7 +116,7 @@ cd apps/api
 pnpm start:dev
 ```
 
-A API vai rodar em `http://localhost:3000`
+A API vai rodar em `http://localhost:3000` (não está deployada em produção no momento)
 
 ### 4. Iniciar o aplicativo
 
@@ -138,7 +138,7 @@ pnpm start
 
 **Web (Local):** Acesse `http://localhost:8081`
 
-**Web (Deployed):** Acesse a aplicação em produção: [https://gem-vendors.vercel.app/](https://gem-vendors.vercel.app/)
+**Web (Deployed):** A aplicação frontend está disponível em produção em [https://gem-vendors.vercel.app/](https://gem-vendors.vercel.app/)
 
 **Mobile:** Instale o [Expo Go](https://expo.dev/go) e escaneie o QR code
 
@@ -146,21 +146,23 @@ pnpm start
 
 ## Como testar
 
-1. Preencha o formulário com:
-   - CEP: `01001-001` (São Paulo)
-   - Ou Rua: `Avenida Paulista`, Número: `1000`, Bairro: `Bela Vista`
+ 1. Preencha o formulário com:
+    - CEP: `01001-001` (São Paulo)
+    - Ou Rua: `Avenida Paulista`, Número: `1000`, Bairro: `Bela Vista`
 
-2. Clique em "Buscar Revendedoras"
+ 2. Clique em "Buscar Revendedoras"
 
-3. Veja a lista de revendedoras ordenadas por distância
+ 3. Veja a lista de revendedoras ordenadas por distância
 
-4. Clique em "Ver rota" para abrir no Google Maps
+ 4. Clique em "Ver rota" para abrir no Google Maps
+
+**Nota:** Testes E2E disponíveis em `/apps/api/test/resellers-search.e2e-spec.ts`
 
 ---
 
 ## Aplicação Online
 
-A aplicação está deployada e funcionando em produção:
+A aplicação frontend está deployada e funcionando em produção:
 
 **[Localizador de Revendedoras — Vercel](https://gem-vendors.vercel.app/)**
 
@@ -172,14 +174,14 @@ A aplicação está deployada e funcionando em produção:
   - Mapa interativo
   - Design system responsivo
 
-> **Nota:** A aplicação em produção usa a API rodando no Railway (https://gem-vendors-api.up.railway.app/) e o banco de dados PostgreSQL hospedado.
+> **Nota:** Atualmente, apenas o frontend está deployado. O backend (API) não está acessível na URL https://gem-vendors-api.up.railway.app/. Para testar a busca de revendedoras funcionalmente, você deve executar o projeto localmente com a API rodando.
 
 ---
 
 ## Estrutura do projeto
 
 ```
-localizador-revendedoras/
+gem_vendors/revendedoras/
 ├── apps/
 │   ├── api/          # Backend (NestJS)
 │   └── app/          # Frontend (React Native + Expo)
@@ -223,19 +225,37 @@ cd apps/api && pnpm prisma migrate dev
 - `docs/checklist-revisao.md` — Checklist de revisão do projeto
 - `apps/app/DESIGN.md` — Design system e cores
 
+## Testes
+
+O projeto possui:
+- **Testes unitários** (7 arquivos .spec.ts) para cada módulo
+- **Teste E2E** em `/apps/api/test/resellers-search.e2e-spec.ts` para busca de revendedoras
+- **Script de seed** para popular o banco de dados com 200 revendedoras fictícias
+
+Para rodar os testes:
+
+```bash
+# Testes unitários
+pnpm test
+
+# Testes unitários específicos
+cd apps/api
+pnpm test
+```
+
 ## Links de Acesso
 
 - **Aplicação Web:** https://gem-vendors.vercel.app/
-- **API Backend:** https://gem-vendors-api.up.railway.app/
 - **Repositório Git:** https://github.com/palenske/gem_vendors
 - **Clone HTTP:** https://github.com/palenske/gem_vendors.git
-- **Status da API:** http://localhost:3000/api/v1/health (local)
+
+**Nota:** O backend não está acessível em produção. Para testar a busca de revendedoras, execute o projeto localmente.
 
 ---
 
 ---
 
-## Decisões técnicas
+## Decisões Técnicas
 
 O projeto utiliza **React Native + Expo** em vez de Next.js/React puro, conforme diferencial solicitado no enunciado. Isso permite desenvolvimento mobile nativo com suporte a web através do Expo Web.
 
@@ -266,12 +286,15 @@ O projeto utiliza **React Native + Expo** em vez de Next.js/React puro, conforme
 
 ### Aplicação Online
 
-A aplicação está **já publicada** e funcionando em produção:
+A aplicação **frontend** está publicada e funcionando em produção:
 
 - **Frontend (Vercel):** [https://gem-vendors.vercel.app/](https://gem-vendors.vercel.app/)
-- **API (Railway):** https://gem-vendors-api.up.railway.app/
 - **Repositório:** https://github.com/palenske/gem_vendors
 - **Clone HTTP:** https://github.com/palenske/gem_vendors.git
+
+### Status do Backend
+
+O backend **não está** deployado na URL https://gem-vendors-api.up.railway.app/ no momento. Para testar a busca de revendedoras de forma completa, é necessário executar o projeto localmente.
 
 ### Como ela foi deployada
 
@@ -279,32 +302,31 @@ A aplicação está **já publicada** e funcionando em produção:
 - Expo Web build automatizado via Vercel
 - Deploy continuo com git integration (repositório: https://github.com/palenske/gem_vendors)
 
-**Backend (Railway):**
-- PostgreSQL database no Railway
-- NestJS API com auto-restart em atualizações
-- Environment variables gerenciadas pelo Railway
+**Backend (em desenvolvimento):**
+- NestJS API rodando localmente em desenvolvimento
+- Configuração de PostgreSQL e Prisma para desenvolvimento local
+- Scripts de seed e testes configurados
 
 ### Deploy Local (para desenvolvimento)
 
 **Para API:**
-1. Criar projeto no Railway
-2. Criar PostgreSQL no Railway e copiar connection string
-3. Criar arquivo `.env` com variáveis:
-   ```env
-   DATABASE_URL="postgresql://..."
-   NOMINATIM_USER_AGENT="localizador-revendedoras-dev"
-   ```
-4. Fazer deploy:
-   ```bash
-   cd apps/api
-   railway up
-   ```
+ 1. Configurar PostgreSQL local ou online
+ 2. Criar arquivo `.env` com variáveis:
+    ```env
+    DATABASE_URL="postgresql://usuario:senha@localhost:5432/localizador_revendedoras?schema=public"
+    NOMINATIM_USER_AGENT="localizador-revendedoras-dev"
+    ```
+ 3. Iniciar API:
+    ```bash
+    cd apps/api
+    pnpm start:dev
+    ```
 
 **Para Frontend (web):**
 ```bash
 cd apps/app
 
-# Build para web
+# Iniciar em modo desenvolvimento
 pnpm web
 
 # O servidor web local ficará disponível em http://localhost:8081
@@ -316,9 +338,6 @@ cd apps/app
 
 # Iniciar em modo desenvolvimento
 pnpm start
-
-# Ou iniciar app nativo
-pnpm web
 ```
 
 ---

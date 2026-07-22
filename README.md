@@ -174,7 +174,7 @@ A aplicação frontend está deployada e funcionando em produção:
   - Mapa interativo
   - Design system responsivo
 
-> **Nota:** Atualmente, apenas o frontend está deployado. O backend (API) não está acessível na URL https://gem-vendors-api.up.railway.app/. Para testar a busca de revendedoras funcionalmente, você deve executar o projeto localmente com a API rodando.
+> **Nota:** O backend está deployado e acessível em https://gemvendors-production.up.railway.app/. A aplicação está totalmente funcional em produção.
 
 ---
 
@@ -249,7 +249,7 @@ pnpm test
 - **Repositório Git:** https://github.com/palenske/gem_vendors
 - **Clone HTTP:** https://github.com/palenske/gem_vendors.git
 
-**Nota:** O backend não está acessível em produção. Para testar a busca de revendedoras, execute o projeto localmente.
+**Nota:** O backend está acessível em produção. Para testar a busca de revendedoras, acesse a aplicação em https://gem-vendors.vercel.app/.
 
 ---
 
@@ -294,7 +294,9 @@ A aplicação **frontend** está publicada e funcionando em produção:
 
 ### Status do Backend
 
-O backend **não está** deployado na URL https://gem-vendors-api.up.railway.app/ no momento. Para testar a busca de revendedoras de forma completa, é necessário executar o projeto localmente.
+O backend está deployado e acessível em produção:
+- **Backend (Railway):** [https://gemvendors-production.up.railway.app/](https://gemvendors-production.up.railway.app/)
+- **Health Check:** https://gemvendors-production.up.railway.app/api/v1/health
 
 ### Como ela foi deployada
 
@@ -302,10 +304,10 @@ O backend **não está** deployado na URL https://gem-vendors-api.up.railway.app
 - Expo Web build automatizado via Vercel
 - Deploy continuo com git integration (repositório: https://github.com/palenske/gem_vendors)
 
-**Backend (em desenvolvimento):**
-- NestJS API rodando localmente em desenvolvimento
-- Configuração de PostgreSQL e Prisma para desenvolvimento local
-- Scripts de seed e testes configurados
+**Backend (Railway):**
+- NestJS API rodando em produção no Railway
+- PostgreSQL gerenciado pelo Railway
+- Dados de revendedoras carregados via seed script
 
 ### Deploy Local (para desenvolvimento)
 

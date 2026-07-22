@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { View, Text, ScrollView, Alert, Platform } from "react-native";
+import { View, Text, Platform } from "react-native";
 import { SearchForm } from "@/components/search-form/SearchForm";
 import { ResellerList } from "@/components/reseller-list/ResellerList";
 import { ResponsiveShell } from "@/components/layout/ResponsiveShell";
+import { Header } from "@/components/layout/Header";
 import { searchResellers, ApiError } from "@/services/api";
 import type { SearchInput, SearchResponse, ResellerResult, LatLng } from "@localizador/shared";
+import { ToastProvider, useToast } from "@/components/ui/Toast/ToastProvider";
+import { SuccessBanner } from "@/components/ui/SuccessBanner";
 
-// Importação condicional do Map para web/native
 let MapComponent: any = null;
 if (Platform.OS === "web") {
   MapComponent = require("@/components/map/Map.web").default;
@@ -17,9 +19,10 @@ if (Platform.OS === "web") {
 /**
  * Tela principal do Localizador de Revendedoras.
  *
- * Integra ResponsiveShell, SearchForm, ResellerList e Map.
+ * Design system: Pro-Locate Unified System
  */
-export default function IndexScreen() {
+function IndexScreen() {
+  const { showToast } = useToast();
   const [searchResults, setSearchResults] = useState<ResellerResult[]>([]);
   const [origin, setOrigin] = useState<LatLng | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,6 +39,7 @@ export default function IndexScreen() {
       setSearchResults(response.results);
       setOrigin(response.origin);
       setError(null);
+      showToast("success", `${response.results.length} revendedora(s) encontrada(s)`);
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -44,8 +48,7 @@ export default function IndexScreen() {
       setError(message);
       setSearchResults([]);
       setOrigin(null);
-      
-      Alert.alert("Erro na busca", message);
+      showToast("error", message);
     } finally {
       setLoading(false);
     }
@@ -55,22 +58,33 @@ export default function IndexScreen() {
     setError(null);
   };
 
-  // Conteúdo do mapa
+  const handleClear = () => {
+    setSearchResults([]);
+    setOrigin(null);
+    setError(null);
+    setHasSearched(false);
+  };
+
+  const bannerSlot = error ? (
+    <View className="bg-error-container py-3 px-4">
+      <Text className="text-on-error-container text-body-md text-center">
+        {error}
+      </Text>
+    </View>
+  ) : null;
+
   const mapContent = (
-    <View className="flex-1 bg-gray-200 dark:bg-gray-700">
+    <View className="flex-1">
       {!origin && !hasSearched ? (
-        <View className="flex-1 items-center justify-center p-4">
+        <View className="flex-1 items-center justify-center p-4 bg-surface-container">
           <Text className="text-4xl mb-3">🗺️</Text>
-          <Text className="text-gray-600 dark:text-gray-400 text-center text-lg font-medium">
+          <Text className="text-body-md text-on-surface-variant text-center">
             O mapa aparecerá aqui após a busca
-          </Text>
-          <Text className="text-gray-500 dark:text-gray-500 text-center text-sm mt-2">
-            Use o formulário ao lado para encontrar revendedoras
           </Text>
         </View>
       ) : loading ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-600 dark:text-gray-400 text-lg">
+        <View className="flex-1 items-center justify-center bg-surface-container">
+          <Text className="text-body-md text-on-surface-variant">
             Carregando mapa...
           </Text>
         </View>
@@ -80,50 +94,38 @@ export default function IndexScreen() {
     </View>
   );
 
-  // Conteúdo da sidebar (formulário + lista)
   const sidebarContent = (
-    <ScrollView className="flex-1 bg-white dark:bg-gray-900">
-      {/* Header da sidebar */}
-      <View className="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
-        <Text className="text-white text-2xl font-bold">Localizador de Revendedoras</Text>
-        <Text className="text-blue-100 text-sm mt-1">
-          Encontre revendedoras próximas a você
-        </Text>
-      </View>
-
-      <View className="p-4">
-        <SearchForm onSubmit={handleSearch} isSubmitting={loading} />
-      </View>
-
-      {hasSearched && (
-        <View className="flex-1">
-          <ResellerList
-            results={searchResults}
-            loading={loading}
-            error={error}
-            onRetry={handleRetry}
-          />
-        </View>
-      )}
-    </ScrollView>
+    <View>
+      <SearchForm onSubmit={handleSearch} onClear={handleClear} isSubmitting={loading} />
+    </View>
   );
 
-  // Banner de erro global (opcional)
-  const bannerSlot = error ? (
-    <View className="bg-red-100 dark:bg-red-900 p-3">
-      <Text className="text-red-800 dark:text-red-200 text-center text-sm">
-        {error}
-      </Text>
-    </View>
+  const listContent = hasSearched ? (
+    <ResellerList
+      results={searchResults}
+      loading={loading}
+      error={error}
+      onRetry={handleRetry}
+    />
   ) : null;
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <View className="flex-1 bg-background">
+      <Header />
       <ResponsiveShell
         map={mapContent}
         sidebar={sidebarContent}
+        listContent={listContent}
         bannerSlot={bannerSlot}
       />
     </View>
+  );
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <IndexScreen />
+    </ToastProvider>
   );
 }

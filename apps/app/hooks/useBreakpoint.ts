@@ -7,7 +7,7 @@ import { useWindowDimensions } from "react-native";
 export const BREAKPOINTS = {
   sm: 640,
   md: 768,
-  lg: 1024,
+  lg: 1440,
 } as const;
 
 export type Breakpoint = "base" | "sm" | "md" | "lg";

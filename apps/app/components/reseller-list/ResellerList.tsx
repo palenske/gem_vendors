@@ -1,6 +1,8 @@
-import { View, Text, ScrollView, ActivityIndicator, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import type { ResellerResult } from "@localizador/shared";
 import { ResellerCard } from "./ResellerCard";
+import { SkeletonCard } from "@/components/ui/SkeletonCard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export interface ResellerListProps {
   results: ResellerResult[];
@@ -11,6 +13,8 @@ export interface ResellerListProps {
 
 /**
  * Lista de revendedoras com estados de loading, vazio e erro.
+ *
+ * Design system: Pro-Locate Unified System
  */
 export function ResellerList({
   results,
@@ -18,67 +22,73 @@ export function ResellerList({
   error,
   onRetry,
 }: ResellerListProps) {
-  // Estado de loading
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center p-8">
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-4 text-gray-600 dark:text-gray-400 text-center">
-          Buscando revendedoras próximas...
+      <View className="p-4">
+        <Text className="text-label-md text-on-surface-variant mb-3">
+          Buscando revendedoras...
         </Text>
+        {[1, 2, 3].map((i) => (
+          <SkeletonCard key={i} />
+        ))}
       </View>
     );
   }
 
-  // Estado de erro
   if (error) {
     return (
-      <View className="flex-1 items-center justify-center p-8">
-        <Text className="text-4xl mb-3">⚠️</Text>
-        <Text className="text-red-500 text-center mb-2 font-semibold">
+      <View className="items-center justify-center p-8">
+        <View className="w-12 h-12 rounded-full bg-error-container items-center justify-center mb-3">
+          <Text className="text-error text-headline-md">!</Text>
+        </View>
+        <Text className="text-headline-md text-on-surface font-semibold mb-2">
           Erro na busca
         </Text>
-        <Text className="text-gray-600 dark:text-gray-400 text-center mb-4">
+        <Text className="text-body-md text-on-surface-variant text-center mb-4">
           {error}
         </Text>
         {onRetry && (
           <Pressable
             onPress={onRetry}
-            className="bg-blue-500 active:bg-blue-600 px-6 py-3 rounded-lg"
+            className="ds-btn-primary px-6"
           >
-            <Text className="text-white font-semibold">Tentar novamente</Text>
+            <Text className="text-on-primary font-semibold">Tentar novamente</Text>
           </Pressable>
         )}
       </View>
     );
   }
 
-  // Estado vazio
   if (results.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center p-8">
-        <Text className="text-4xl mb-3">🔍</Text>
-        <Text className="text-gray-600 dark:text-gray-400 text-center text-lg font-medium">
+      <View className="items-center justify-center p-8">
+        <View className="w-12 h-12 rounded-full bg-surface-container-high items-center justify-center mb-3">
+          <Text className="text-outline text-headline-md">🔍</Text>
+        </View>
+        <Text className="text-headline-md text-on-surface font-semibold mb-2">
           Nenhuma revendedora encontrada
         </Text>
-        <Text className="text-gray-500 dark:text-gray-500 text-center text-sm mt-2">
+        <Text className="text-body-md text-on-surface-variant text-center">
           Tente aumentar o raio de busca ou usar outro endereço
         </Text>
       </View>
     );
   }
 
-  // Estado com resultados
   return (
-    <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
-      <Text className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-        {results.length} {results.length === 1 ? "revendedora encontrada" : "revendedoras encontradas"}
-      </Text>
-      {results.map((reseller) => (
-        <ResellerCard key={reseller.id} reseller={reseller} />
-      ))}
-    </ScrollView>
+    <ErrorBoundary>
+      <View className="p-4">
+        <Text className="text-label-md text-on-surface-variant mb-3">
+          {results.length} {results.length === 1 ? "revendedora encontrada" : "revendedoras encontradas"}
+        </Text>
+        {results.map((reseller) => (
+          <ResellerCard key={reseller.id} reseller={reseller} />
+        ))}
+      </View>
+    </ErrorBoundary>
   );
 }
+
+export { ErrorBoundary };
 
 export default ResellerList;

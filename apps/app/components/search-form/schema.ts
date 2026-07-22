@@ -6,8 +6,7 @@ import { z } from "zod";
  * Validação:
  * - CEP: formato brasileiro (8 dígitos ou 5+3 com hífen)
  * - Todos os campos são opcionais individualmente
- * - Ao menos um critério de busca deve ser informado (CEP OU endereço OU coordenadas)
- * - Latitude e longitude devem ser informadas juntas
+ * - Ao menos um critério de busca deve ser informado (CEP OU endereço)
  */
 export const searchFormSchema = z
   .object({
@@ -18,7 +17,6 @@ export const searchFormSchema = z
       .refine(
         (val) => {
           if (!val) return true;
-          // Aceita 8 dígitos ou formato 00000-000
           const digits = val.replace(/\D/g, "");
           return digits.length === 8;
         },
@@ -30,50 +28,23 @@ export const searchFormSchema = z
     number: z.string().trim().optional(),
     neighborhood: z.string().trim().optional(),
     radiusKm: z
-      .string()
-      .trim()
-      .optional()
-      .refine(
-        (val) => {
-          if (!val) return true;
-          const num = Number(val);
-          return !isNaN(num) && num > 0;
-        },
-        {
-          message: "Raio deve ser um número positivo",
-        },
-      ),
-    // Campos ocultos para geolocalização
-    latitude: z.number().min(-90).max(90).optional(),
-    longitude: z.number().min(-180).max(180).optional(),
+      .number()
+      .min(1, "Raio deve ser pelo menos 1 km")
+      .max(100, "Raio máximo é 100 km")
+      .optional(),
   })
   .superRefine((data, ctx) => {
     const hasZipCode = Boolean(data.zipCode && data.zipCode.trim().length > 0);
     const hasAddress =
       Boolean(data.street && data.street.trim().length > 0) ||
       Boolean(data.neighborhood && data.neighborhood.trim().length > 0);
-    const hasCoordinates =
-      data.latitude !== undefined && data.longitude !== undefined;
 
-    // Validação: ao menos um critério de busca
-    if (!hasZipCode && !hasAddress && !hasCoordinates) {
+    if (!hasZipCode && !hasAddress) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          "Informe ao menos um critério de busca: CEP, endereço (rua ou bairro) ou use sua localização",
+          "Informe ao menos um critério de busca: CEP ou endereço (rua ou bairro)",
         path: ["zipCode"],
-      });
-    }
-
-    // Validação: latitude e longitude devem vir juntas
-    const hasOnlyLatitude = data.latitude !== undefined && data.longitude === undefined;
-    const hasOnlyLongitude = data.latitude === undefined && data.longitude !== undefined;
-
-    if (hasOnlyLatitude || hasOnlyLongitude) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Latitude e longitude devem ser informadas juntas",
-        path: hasOnlyLatitude ? ["longitude"] : ["latitude"],
       });
     }
   });

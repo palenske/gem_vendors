@@ -26,7 +26,7 @@ export const SearchInputSchema = z
     longitude: z.coerce.number().min(-180).max(180).optional(),
     radiusKm: z.coerce.number().positive().optional(),
     q: z.string().trim().min(1).optional(),
-    status: z.enum(ResellerStatus).optional(),
+    status: z.nativeEnum(ResellerStatus).optional(),
     page: z.coerce.number().int().positive().optional(),
     limit: z.coerce.number().int().positive().max(100).optional(),
   })
@@ -78,7 +78,7 @@ export const ResellerResultSchema = z.object({
   name: z.string(),
   address: z.string(),
   zipCode: z.string(),
-  status: z.enum(ResellerStatus),
+  status: z.nativeEnum(ResellerStatus),
   distanceKm: z.number(),
   location: LocationSchema,
   routeUrl: z.string(),

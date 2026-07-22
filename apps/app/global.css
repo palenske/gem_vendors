@@ -1,3 +1,98 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 0 35 111;
+    --color-secondary: 0 88 190;
+    --color-surface: 248 249 250;
+    --color-on-surface: 25 28 29;
+    --color-outline: 117 118 130;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    background-color: #f8f9fa;
+    color: #191c1d;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar for web */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f3f4f5;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c5c5d3;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #757682;
+  }
+}
+
+@layer components {
+  .ds-card {
+    @apply bg-surface-container-lowest border border-outline-variant rounded-lg;
+    box-shadow: 0 1px 3px rgba(0, 35, 111, 0.08);
+  }
+
+  .ds-card-elevated {
+    @apply bg-surface-container-lowest border border-outline-variant rounded-lg;
+    box-shadow: 0 4px 6px rgba(0, 35, 111, 0.05);
+  }
+
+  .ds-input {
+    @apply w-full px-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-md text-on-surface placeholder-outline;
+  }
+
+  .ds-input:focus {
+    @apply border-primary outline-none;
+    box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.1);
+  }
+
+  .ds-btn-primary {
+    @apply px-4 py-3 bg-primary text-on-primary font-semibold rounded-md;
+    min-height: 48px;
+  }
+
+  .ds-btn-primary:active {
+    @apply bg-primary-container;
+  }
+
+  .ds-btn-primary:disabled {
+    @apply bg-surface-container-high text-outline cursor-not-allowed;
+  }
+
+  .ds-btn-secondary {
+    @apply px-4 py-3 bg-transparent border border-primary text-primary font-semibold rounded-md;
+    min-height: 48px;
+  }
+
+  .ds-btn-secondary:active {
+    @apply bg-surface-container;
+  }
+
+  .ds-label {
+    @apply text-label-md text-on-surface-variant;
+  }
+
+  .ds-body {
+    @apply text-body-md text-on-surface;
+  }
+
+  .ds-caption {
+    @apply text-caption text-outline;
+  }
+}

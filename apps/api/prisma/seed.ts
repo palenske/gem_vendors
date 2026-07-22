@@ -56,6 +56,7 @@ async function geocode(
       q: address,
       format: "json",
       limit: "1",
+      addressdetails: "1",
     });
 
     const response = await fetch(`${NOMINATIM_URL}?${params}`, {
@@ -87,6 +88,47 @@ async function geocode(
   }
 }
 
+async function geocodeWithFallbacks(
+  street: string,
+  number: string,
+  neighborhood: string,
+  city: string,
+  state: string,
+  zipCode: string,
+): Promise<{ latitude: number; longitude: number } | null> {
+  const strategies = [
+    // Strategy 1: Full address (original)
+    `${street}, ${number}, ${neighborhood}, ${city}, ${state}, ${zipCode}, Brasil`,
+    // Strategy 2: Full address without neighborhood
+    `${street}, ${number}, ${city}, ${state}, ${zipCode}, Brasil`,
+    // Strategy 3: Street + number + city + state
+    `${street}, ${number}, ${city}, ${state}, Brasil`,
+    // Strategy 4: CEP only
+    `${zipCode}, Brasil`,
+    // Strategy 5: Street + city + state (without number)
+    `${street}, ${city}, ${state}, Brasil`,
+    // Strategy 6: Neighborhood + city + state (useful for common street names)
+    `${neighborhood}, ${city}, ${state}, Brasil`,
+    // Strategy 7: City + state (fallback to city center)
+    `${city}, ${state}, Brasil`,
+  ];
+
+  for (let i = 0; i < strategies.length; i++) {
+    const strategy = strategies[i];
+    const coords = await geocode(strategy);
+    if (coords) {
+      console.log(`  ✓ Strategy ${i + 1} succeeded`);
+      return coords;
+    }
+    console.log(
+      `  ✗ Strategy ${i + 1} failed: ${strategy.substring(0, 60)}...`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY_MS));
+  }
+
+  return null;
+}
+
 function logFailure(id: string, name: string, address: string, reason: string) {
   const timestamp = new Date().toISOString();
   const logEntry = `[${timestamp}] ID: ${id} | Name: ${name} | Address: ${address} | Reason: ${reason}\n`;
@@ -103,11 +145,11 @@ async function main() {
   );
   const csvContent = stripBom(fs.readFileSync(csvPath, "utf-8"));
 
-  const records = parse(csvContent, {
+  const records: CsvRow[] = parse(csvContent, {
     delimiter: ";",
     columns: true,
     skip_empty_lines: true,
-  }) as CsvRow[];
+  });
 
   console.log(`Found ${records.length} records in CSV`);
 
@@ -125,31 +167,30 @@ async function main() {
     const zipCode = normalizeCep(record.cep);
     const status = normalizeStatus(record.status);
 
-    // Construct full address for geocoding
-    const fullAddress = `${street}, ${number}, ${neighborhood}, ${city}, ${state}, ${zipCode}, Brasil`;
+    console.log(`Geocoding ID ${id}: ${name}`);
 
-    console.log(`Geocoding: ${fullAddress}`);
-
-    // Try full address first
-    let coords = await geocode(fullAddress);
-
-    // If full address fails, try CEP only
-    if (!coords) {
-      console.log(`  Full address failed, trying CEP: ${zipCode}`);
-      coords = await geocode(`${zipCode}, Brasil`);
-    }
+    // Try multiple geocoding strategies
+    const coords = await geocodeWithFallbacks(
+      street,
+      number,
+      neighborhood,
+      city,
+      state,
+      zipCode,
+    );
 
     if (!coords) {
-      console.log(`  Failed to geocode ID ${id}`);
+      console.log(`  ✗ All geocoding strategies failed for ID ${id}`);
+      const fullAddress = `${street}, ${number}, ${neighborhood}, ${city}, ${state}, ${zipCode}, Brasil`;
       logFailure(
         String(id),
         name,
         fullAddress,
-        "Nominatim returned no results",
+        "All geocoding strategies failed",
       );
       failCount++;
     } else {
-      console.log(`  Geocoded: ${coords.latitude}, ${coords.longitude}`);
+      console.log(`  ✓ Geocoded: ${coords.latitude}, ${coords.longitude}`);
       successCount++;
     }
 

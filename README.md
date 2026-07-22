@@ -56,11 +56,11 @@ Não há uso de credenciais de IA (API keys, tokens) no projeto. Todas as decis�
 1. **Clone o repositório:**
 
 ```bash
-git clone https://github.com/palenske/localizador-revendedoras.git
-cd localizador-revendedoras
+git clone https://github.com/palenske/gem_vendors.git
+cd gem_vendors/revendedoras
 ```
 
-> **Nota**: Repositório: https://github.com/palenske/localizador-revendedoras
+> **Nota**: Repositório: https://github.com/palenske/gem_vendors
 
 2. **Instale as dependências:**
 
@@ -227,7 +227,8 @@ cd apps/api && pnpm prisma migrate dev
 
 - **Aplicação Web:** https://gem-vendors.vercel.app/
 - **API Backend:** https://gem-vendors-api.up.railway.app/
-- **Repositório Git:** https://github.com/palenske/localizador-revendedoras
+- **Repositório Git:** https://github.com/palenske/gem_vendors
+- **Clone HTTP:** https://github.com/palenske/gem_vendors.git
 - **Status da API:** http://localhost:3000/api/v1/health (local)
 
 ---
@@ -269,13 +270,14 @@ A aplicação está **já publicada** e funcionando em produção:
 
 - **Frontend (Vercel):** [https://gem-vendors.vercel.app/](https://gem-vendors.vercel.app/)
 - **API (Railway):** https://gem-vendors-api.up.railway.app/
-- **Repositório:** https://github.com/palenske/localizador-revendedoras
+- **Repositório:** https://github.com/palenske/gem_vendors
+- **Clone HTTP:** https://github.com/palenske/gem_vendors.git
 
 ### Como ela foi deployada
 
 **Frontend (Vercel):**
 - Expo Web build automatizado via Vercel
-- Deploy continuo com git integration
+- Deploy continuo com git integration (repositório: https://github.com/palenske/gem_vendors)
 
 **Backend (Railway):**
 - PostgreSQL database no Railway

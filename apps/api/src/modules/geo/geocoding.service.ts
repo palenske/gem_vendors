@@ -2,6 +2,14 @@ import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { LatLng } from "./geo.service";
 
+export interface ReverseGeocodeResult {
+  logradouro: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+  cep: string;
+}
+
 @Injectable()
 export class GeocodingService {
   private readonly logger = new Logger(GeocodingService.name);
@@ -59,6 +67,73 @@ export class GeocodingService {
       }
 
       this.logger.error(`Geocoding error: ${String(error)}`);
+      throw new HttpException(
+        "Serviço de geocodificação temporariamente indisponível",
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
+
+  async reverseGeocode(lat: number, lon: number): Promise<ReverseGeocodeResult> {
+    try {
+      const params = new URLSearchParams({
+        lat: String(lat),
+        lon: String(lon),
+        format: "json",
+        addressdetails: "1",
+      });
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?${params}`,
+        {
+          headers: {
+            "User-Agent": this.userAgent,
+          },
+          signal: AbortSignal.timeout(5000),
+        },
+      );
+
+      if (!response.ok) {
+        this.logger.error(`Nominatim reverse HTTP error: ${response.status}`);
+        throw new HttpException(
+          "Serviço de geocodificação temporariamente indisponível",
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      const data = (await response.json()) as {
+        address?: {
+          road?: string;
+          neighbourhood?: string;
+          city?: string;
+          state?: string;
+          postcode?: string;
+        };
+        error?: string;
+      };
+
+      if (data.error || !data.address) {
+        throw new HttpException(
+          "Não foi possível resolver o endereço para as coordenadas informadas",
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      const cep = (data.address.postcode || "").replace(/\D/g, "");
+
+      return {
+        logradouro: data.address.road || "",
+        bairro: data.address.neighbourhood || "",
+        localidade: data.address.city || "",
+        uf: data.address.state || "",
+        cep,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      this.logger.error(`Reverse geocoding error: ${String(error)}`);
       throw new HttpException(
         "Serviço de geocodificação temporariamente indisponível",
         HttpStatus.SERVICE_UNAVAILABLE,

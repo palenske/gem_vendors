@@ -191,10 +191,32 @@ export async function lookupCep(
   return parsed.data;
 }
 
+/** Resolve coordenadas para endereço via reverse geocoding. */
+export async function reverseGeocode(
+  lat: number,
+  lon: number,
+  options?: RequestOptions,
+): Promise<CepResponse> {
+  const raw = await apiFetch<unknown>(
+    `/api/v1/geo/reverse?lat=${lat}&lon=${lon}`,
+    options,
+  );
+
+  const parsed = CepResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new ApiError(
+      "A resposta da API de reverse geocoding não corresponde ao formato esperado.",
+      { cause: parsed.error },
+    );
+  }
+
+  return parsed.data;
+}
+
 /** Verifica se a API está no ar. */
 export async function health(options?: RequestOptions): Promise<{ status: string }> {
   return apiFetch<{ status: string }>("/api/v1/health", options);
 }
 
-export const api = { searchResellers, lookupCep, health };
+export const api = { searchResellers, lookupCep, reverseGeocode, health };
 export default api;

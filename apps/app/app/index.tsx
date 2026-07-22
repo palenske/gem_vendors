@@ -26,11 +26,19 @@ function IndexScreen() {
   const [searchResults, setSearchResults] = useState<ResellerResult[]>([]);
   const [origin, setOrigin] = useState<LatLng | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [searchParams, setSearchParams] = useState<SearchInput | null>(null);
 
   const handleSearch = async (params: SearchInput) => {
     setLoading(true);
+    setLoadingMore(false);
+    setPage(1);
+    setHasMore(true);
+    setSearchParams(params);
     setError(null);
     setHasSearched(true);
 
@@ -39,6 +47,8 @@ function IndexScreen() {
       setSearchResults(response.results);
       setOrigin(response.origin);
       setError(null);
+      // Se o backend paginou menos que 20, não há mais resultados
+      setHasMore(response.results.length < 20);
       showToast("success", `${response.results.length} revendedora(s) encontrada(s)`);
     } catch (err) {
       const message =
@@ -56,6 +66,34 @@ function IndexScreen() {
 
   const handleRetry = () => {
     setError(null);
+  };
+
+  const handleLoadMore = async () => {
+    if (!searchParams) return;
+
+    setLoadingMore(true);
+
+    try {
+      const nextPage = page + 1;
+      const { page: _, limit: __, ...searchQuery } = searchParams;
+      const response: SearchResponse = await searchResellers({
+        ...searchQuery,
+        page: nextPage,
+        limit: 20,
+      });
+      setSearchResults((prev) => [...prev, ...response.results]);
+      setPage(nextPage);
+      setHasMore(response.results.length >= 20);
+      showToast("success", `${response.results.length} revendedora(s) adicionais`);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Erro ao carregar mais revendedoras.";
+      showToast("error", message);
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   const handleClear = () => {
@@ -103,9 +141,11 @@ function IndexScreen() {
   const listContent = hasSearched ? (
     <ResellerList
       results={searchResults}
-      loading={loading}
+      loading={loading || loadingMore}
       error={error}
       onRetry={handleRetry}
+      onLoadMore={handleLoadMore}
+      hasMore={hasMore && !searchParams?.radiusKm}
     />
   ) : null;
 

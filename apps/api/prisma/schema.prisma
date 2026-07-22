@@ -31,4 +31,6 @@ model Reseller {
   @@index([status])
   @@index([zipCode])
   @@index([city])
+  @@index([status, latitude, longitude])
+  @@index([name, street, neighborhood, city])
 }

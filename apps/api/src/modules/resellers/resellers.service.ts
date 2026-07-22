@@ -77,7 +77,22 @@ export class ResellersService {
     // Sort by distance
     results.sort((a, b) => a.distanceKm - b.distanceKm);
 
-    // Pagination
+    // Pagination logic:
+    // - If radiusKm is defined: return ALL results (no pagination, limitation is the radius)
+    // - If no radius: paginate to avoid overwhelming with thousands of results
+    if (dto.radiusKm) {
+      return {
+        origin,
+        results,
+        meta: {
+          page: 1,
+          limit: results.length, // Indicates "all results"
+          total: results.length,
+        },
+      };
+    }
+
+    // No radius defined: paginate for performance
     const page = dto.page || 1;
     const limit = dto.limit || 20;
     const total = results.length;

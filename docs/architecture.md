@@ -35,7 +35,7 @@ src/
 ├── modules/
 │   ├── geo/
 │   │   ├── geo.service.ts     # Haversine distance calculation
-│   │   └── geocoding.service.ts  # Nominatim address → coordinates
+│   │   └── geocoding.service.ts  # Forward geocoding (address → coordinates)
 │   ├── cep/
 │   │   ├── cep.controller.ts  # GET /api/v1/cep/:zipCode
 │   │   └── cep.service.ts     # ViaCEP API integration
